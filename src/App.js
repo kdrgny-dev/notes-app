@@ -1,23 +1,61 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react'
+import uuid from 'react-uuid'
+import './App.css'
+import Main from './components/Main'
+import Sidebar from './components/Sidebar'
 
 function App() {
+    const [notes, setNotes] = useState(JSON.parse(localStorage.notes) || [])
+    const [activeNote, setActiveNote] = useState(false)
+
+    useEffect(() => {
+        localStorage.setItem("notes", JSON.stringify(notes))
+    }, [notes])
+
+    const onAddNote = () => {
+        const newNote = {
+            id: uuid(),
+            title: 'Untitled Note',
+            body: '',
+            lastModified: Date.now()
+        }
+        
+        setNotes([newNote, ...notes])
+    }
+
+    const onDeleteNote = (idToDelete) => {
+        setNotes(notes.filter((note) => note.id !== idToDelete))
+    }
+
+    const onUpdateNote = (updatedNotes) => {
+        const updatedNotesArray = notes.map((note) => {
+            if (note.id === activeNote) {
+                return updatedNotes;
+            }
+
+            return note
+        })
+
+        setNotes(updatedNotesArray)
+    }
+    
+
+    const getActiveNote = () => {
+        return notes.find((note) => note.id === activeNote)
+    }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+          <Sidebar
+              notes={notes}
+              onAddNote={onAddNote}
+              onDeleteNote={onDeleteNote}
+              activeNote={activeNote}
+              setActiveNote={setActiveNote}
+          />
+          <Main
+              activeNote={getActiveNote()}
+              onUpdateNote={onUpdateNote}
+          />
     </div>
   );
 }
